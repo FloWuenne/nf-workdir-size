@@ -1,137 +1,52 @@
-# nf-workdir-size plugin 
- 
-This project contains a simple Nextflow plugin called `nf-workdir-size` which provides examples of different plugin extensions:
+# nf-workdir-size
 
-- A custom trace observer that prints a message when the workflow starts and when the workflow completes
-- A custom channel factory called `reverse`
-- A custom operator called `goodbye`
-- A custom function called `randomString`
+A Nextflow plugin to monitor and report working directory sizes during pipeline execution.
 
-NOTE: If you want to use this project as a starting point for a custom plugin, you must rename the `plugins/nf-workdir-size` folder and update `settings.gradle` with your plugin name.
+## Requirements
 
-See the [Nextflow documentation](https://nextflow.io/docs/latest/plugins.html) for more information about developing plugins.
+- Nextflow `>=24.01.0-edge`
 
-## Plugin structure
-                    
-- `settings.gradle`
-    
-    Gradle project settings. 
+## Installation
 
-- `plugins/nf-workdir-size`
-    
-    The plugin implementation base directory.
+To use this plugin in your Nextflow pipeline, you can add it to your pipeline configuration:
 
-- `plugins/nf-workdir-size/build.gradle` 
-    
-    Plugin Gradle build file. Project dependencies should be added here.
-
-- `plugins/nf-workdir-size/src/resources/META-INF/MANIFEST.MF` 
-    
-    Manifest file defining the plugin attributes e.g. name, version, etc. The attribute `Plugin-Class` declares the plugin main class. This class should extend the base class `nextflow.plugin.BasePlugin` e.g. `nextflow.hello.HelloPlugin`.
-
-- `plugins/nf-workdir-size/src/resources/META-INF/extensions.idx`
-    
-    This file declares one or more extension classes provided by the plugin. Each line should contain the fully qualified name of a Java class that implements the `org.pf4j.ExtensionPoint` interface (or a sub-interface).
-
-- `plugins/nf-workdir-size/src/main` 
-
-    The plugin implementation sources.
-
-- `plugins/nf-workdir-size/src/test` 
-
-    The plugin unit tests. 
-
-## Plugin classes
-
-- `HelloConfig`: shows how to handle options from the Nextflow configuration
-
-- `HelloExtension`: shows how to create custom channel factories, operators, and fuctions that can be included into pipeline scripts
-
-- `WorkdirSizeFactory` and `WorkdirSizeObserver`: shows how to react to workflow events with custom behavior
-
-- `HelloPlugin`: the plugin entry point
-
-## Unit testing 
-
-To run your unit tests, run the following command in the project root directory (ie. where the file `settings.gradle` is located):
-
-```bash
-./gradlew check
+```
+plugins {
+  id 'nf-workdir-size@0.1.0'
+}
 ```
 
-## Testing and debugging
+## Description
 
-To build and test the plugin during development, configure a local Nextflow build with the following steps:
+This plugin helps monitor disk space usage by tracking the size of Nextflow's working directories after pipeline execution. 
 
-1. Clone the Nextflow repository in your computer into a sibling directory:
-    ```bash
-    git clone --depth 1 https://github.com/nextflow-io/nextflow ../nextflow
-    ```
-  
-2. Configure the plugin build to use the local Nextflow code:
-    ```bash
-    echo "includeBuild('../nextflow')" >> settings.gradle
-    ```
-  
-   (Make sure to not add it more than once!)
+## Components
 
-3. Compile the plugin alongside the Nextflow code:
-    ```bash
-    make assemble
-    ```
+### WorkdirSizeObserver
 
-4. Run Nextflow with the plugin, using `./launch.sh` as a drop-in replacement for the `nextflow` command, and adding the option `-plugins nf-workdir-size` to load the plugin:
-    ```bash
-    ./launch.sh run nextflow-io/hello -plugins nf-workdir-size
-    ```
+The `WorkdirSizeObserver` is a trace observer that:
+- Reports the final size of working directories when the workflow completes
 
-## Testing without Nextflow build
+### WorkdirSizeFactory
 
-The plugin can be tested without using a local Nextflow build using the following steps:
+The `WorkdirSizeFactory` is responsible for:
+- Creating and registering the WorkdirSizeObserver
+- Setting up the monitoring infrastructure
+- Managing the lifecycle of the disk space monitoring
 
-1. Build the plugin: `make buildPlugins`
-2. Install the plugin using one of these methods:
+## Usage
 
-   ```bash
-   # Install a specific plugin (if you have added new plugins to the plugins/ directory)
-   make install-plugin plugin=nf-workdir-size
+Once the plugin is installed and enabled in your pipeline configuration, it will automatically track working directory sizes during pipeline execution.
 
-   # Install all available plugins
-   make install-plugin
-   ```
+The plugin will:
+1. Initialize disk space monitoring when the workflow starts
+2. Track working directory sizes for each process
+3. Add information about workdir sizes to the .nextflow.log file
 
-   The plugins will be installed to one of these locations, in order of precedence:
-   - Directory specified by `NXF_PLUGINS_DIR` environment variable
-   - `$NXF_HOME/plugins` if `NXF_HOME` is set
-   - `$HOME/.nextflow/plugins` (default location)
+## Version
 
-   Alternatively, you can use Gradle commands directly:
-   ```bash
-   # Install a specific plugin
-   ./gradlew :plugins:nf-workdir-size:installPlugin
+Current version: 0.1.0
 
-   # Install all plugins
-   ./gradlew installPlugin
-   ```
+## Support
 
-3. Create a pipeline that uses your plugin and run it: `nextflow run ./my-pipeline-script.nf`
-
-## Package, upload, and publish
-
-The project should be hosted in a GitHub repository whose name matches the name of the plugin, that is the name of the directory in the `plugins` folder (e.g. `nf-workdir-size`).
-
-Follow these steps to package, upload and publish the plugin:
-
-1. Create a file named `gradle.properties` in the project root containing the following attributes (this file should not be committed to Git):
-
-   * `github_organization`: the GitHub organisation where the plugin repository is hosted.
-   * `github_username`: The GitHub username granting access to the plugin repository.
-   * `github_access_token`: The GitHub access token required to upload and commit changes to the plugin repository.
-   * `github_commit_email`: The email address associated with your GitHub account.
-
-2. Use the following command to package and create a release for your plugin on GitHub:
-    ```bash
-    ./gradlew :plugins:nf-workdir-size:upload
-    ```
-
-3. Create a pull request against [nextflow-io/plugins](https://github.com/nextflow-io/plugins/blob/main/plugins.json) to make the plugin accessible to Nextflow.
+For bug reports and feature requests, please open an issue on the [GitHub repository](https://github.com/FloWuenne/nf-workdir-size).
